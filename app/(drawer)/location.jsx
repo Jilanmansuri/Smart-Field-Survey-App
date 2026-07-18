@@ -1,18 +1,27 @@
-import React, { useState } from "react";
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import * as Location from "expo-location";
-import MapView, { Marker } from "react-native-maps";
 import * as Clipboard from "expo-clipboard";
+import * as Location from "expo-location";
+import { useState } from "react";
+import {
+    Alert,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    useColorScheme,
+} from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import { router } from "expo-router";
+import { useSurveyContext } from "../../contexts/survey-context";
+import { Colors } from "../../constants/theme";
 
 const LocationScreen = () => {
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [location, setLocation] = useState(null);
+  const { updateSurvey } = useSurveyContext();
+
+  const theme = useColorScheme() ?? "light";
+  const colors = Colors[theme];
+  const styles = getStyles(colors);
 
   // Request Permission
   const requestPermission = async () => {
@@ -34,7 +43,10 @@ const LocationScreen = () => {
       });
 
       setLocation(currentLocation);
-    } catch (error) {
+      updateSurvey({
+        location: `${currentLocation.coords.latitude}, ${currentLocation.coords.longitude}`,
+      });
+    } catch {
       Alert.alert("Error", "Unable to fetch location");
     }
   };
@@ -56,12 +68,15 @@ Longitude: ${location.coords.longitude}
 Accuracy: ${location.coords.accuracy} meters`;
 
     await Clipboard.setStringAsync(locationText);
+    updateSurvey({
+      location: `${location.coords.latitude}, ${location.coords.longitude}`,
+    });
 
     Alert.alert("Success", "Location Copied Successfully!");
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Location Demo</Text>
 
       {/* Permission / Get Location Button */}
@@ -139,50 +154,86 @@ Accuracy: ${location.coords.accuracy} meters`;
               Copy Current Location
             </Text>
           </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              styles.useBtn,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={() => {
+              updateSurvey({
+                location: `${location.coords.latitude}, ${location.coords.longitude}`,
+              });
+              Alert.alert("Success", "Location assigned to survey draft!");
+              router.push("/(drawer)/(tabs)/survey");
+            }}
+          >
+            <Text style={styles.buttonText}>
+              Use Location in Survey
+            </Text>
+          </Pressable>
         </>
       )}
-    </View>
+    </ScrollView>
   );
 };
 
 export default LocationScreen;
 
-const styles = StyleSheet.create({
-  container: {
+const getStyles = (colors) => StyleSheet.create({
+  scrollContainer: {
     flex: 1,
-    backgroundColor: "black",
+    backgroundColor: colors.background,
+  },
+
+  container: {
+    flexGrow: 1,
     alignItems: "center",
     paddingTop: 50,
+    paddingBottom: 35,
   },
 
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "white",
+    color: colors.text,
     marginBottom: 20,
   },
 
   button: {
-    backgroundColor: "white",
+    backgroundColor: colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
     marginTop: 15,
+    width: "80%",
+    alignItems: "center",
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+
+  useBtn: {
+    backgroundColor: colors.success,
+    shadowColor: colors.success,
   },
 
   buttonPressed: {
-    backgroundColor: "#ccc",
-    transform: [{ scale: 0.95 }],
+    opacity: 0.8,
+    transform: [{ scale: 0.97 }],
   },
 
   buttonText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "black",
+    color: colors.buttonText,
   },
 
   location: {
-    color: "white",
+    color: colors.text,
     fontSize: 17,
     marginTop: 10,
   },
@@ -192,5 +243,7 @@ const styles = StyleSheet.create({
     height: 250,
     marginTop: 20,
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
 });

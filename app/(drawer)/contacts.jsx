@@ -1,7 +1,10 @@
-import React, { useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View, } from "react-native";
-import * as Contacts from "expo-contacts";
 import * as Clipboard from "expo-clipboard";
+import * as Contacts from "expo-contacts";
+import { useState } from "react";
+import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View, useColorScheme } from "react-native";
+import { router } from "expo-router";
+import { useSurveyContext } from "../../contexts/survey-context";
+import { Colors } from "../../constants/theme";
 
 const ContactsScreen = () => {
     const [contactsList, setContactsList] = useState([]);
@@ -9,6 +12,11 @@ const ContactsScreen = () => {
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [search, setSearch] = useState("");
+    const { updateSurvey } = useSurveyContext();
+
+    const theme = useColorScheme() ?? "light";
+    const colors = Colors[theme];
+    const styles = getStyles(colors);
 
     const getContacts = async () => {
         setLoading(true);
@@ -53,7 +61,18 @@ const ContactsScreen = () => {
         }
 
         await Clipboard.setStringAsync(number);
-        Alert.alert("Success", "Phone number copied!");
+        Alert.alert("Success", "Phone number copied to clipboard!");
+    };
+
+    const selectContact = (number) => {
+        if (!number) {
+            Alert.alert("No Number", "This contact has no phone number.");
+            return;
+        }
+
+        updateSurvey({ contact: number });
+        Alert.alert("Success", "Contact linked to survey draft!");
+        router.push("/(drawer)/(tabs)/survey");
     };
 
     const renderItem = ({ item }) => {
@@ -79,12 +98,20 @@ const ContactsScreen = () => {
                 </View>
 
                 {phone && (
-                    <Pressable
-                        style={styles.copyButton}
-                        onPress={() => copyNumber(phone)}
-                    >
-                        <Text style={styles.copyText}>Copy</Text>
-                    </Pressable>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                        <Pressable
+                            style={styles.copyButton}
+                            onPress={() => selectContact(phone)}
+                        >
+                            <Text style={styles.copyText}>Link</Text>
+                        </Pressable>
+                        <Pressable
+                            style={[styles.copyButton, { backgroundColor: colors.icon }]}
+                            onPress={() => copyNumber(phone)}
+                        >
+                            <Text style={styles.copyText}>Copy</Text>
+                        </Pressable>
+                    </View>
                 )}
             </View>
         );
@@ -105,11 +132,12 @@ const ContactsScreen = () => {
             <TextInput
                 style={styles.input}
                 placeholder="Search Contacts..."
+                placeholderTextColor={colors.textSecondary}
                 value={search}
                 onChangeText={handleSearch}
             />
 
-            {loading && <ActivityIndicator size="large" />}
+            {loading && <ActivityIndicator size="large" color={colors.primary} />}
 
             {!loading && filteredContacts.length === 0 ? (
                 <View style={styles.emptyContainer}>
@@ -119,11 +147,14 @@ const ContactsScreen = () => {
                 <FlatList
                     data={filteredContacts}
                     keyExtractor={(item) => item.id}
+                    contentContainerStyle={{ paddingBottom: 35 }}
                     renderItem={renderItem}
                     refreshControl={
                         <RefreshControl
                             refreshing={refreshing}
                             onRefresh={onRefresh}
+                            colors={[colors.primary]}
+                            tintColor={colors.primary}
                         />
                     }
                 />
@@ -134,93 +165,105 @@ const ContactsScreen = () => {
 
 export default ContactsScreen;
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: "#fff",
+        backgroundColor: colors.background,
     },
 
     heading: {
         fontSize: 28,
-        fontWeight: "bold",
+        fontWeight: "800",
         textAlign: "center",
         marginBottom: 15,
+        color: colors.text,
     },
 
     button: {
-        backgroundColor: "#2196F3",
-        padding: 12,
-        borderRadius: 10,
+        backgroundColor: colors.primary,
+        padding: 13,
+        borderRadius: 14,
         alignItems: "center",
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 10,
+        elevation: 6,
     },
 
     buttonText: {
-        color: "#fff",
-        fontSize: 18,
-        fontWeight: "bold",
+        color: colors.buttonText,
+        fontSize: 16,
+        fontWeight: "700",
     },
 
     counter: {
         marginVertical: 15,
-        fontSize: 18,
-        fontWeight: "bold",
+        fontSize: 16,
+        fontWeight: "700",
         textAlign: "center",
+        color: colors.textSecondary,
     },
 
     input: {
         borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 10,
-        padding: 10,
+        borderColor: colors.inputBorder,
+        borderRadius: 14,
+        padding: 12,
         marginBottom: 15,
+        backgroundColor: colors.inputBg,
+        color: colors.text,
     },
 
     card: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#f5f5f5",
-        padding: 15,
+        backgroundColor: colors.card,
+        padding: 14,
         marginBottom: 10,
-        borderRadius: 12,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
 
     avatar: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: "#2196F3",
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: colors.primary,
         justifyContent: "center",
         alignItems: "center",
-        marginRight: 15,
+        marginRight: 12,
     },
 
     avatarText: {
-        color: "#fff",
-        fontSize: 22,
-        fontWeight: "bold",
+        color: colors.buttonText,
+        fontSize: 20,
+        fontWeight: "700",
     },
 
     name: {
-        fontSize: 18,
-        fontWeight: "bold",
+        fontSize: 16,
+        fontWeight: "700",
+        color: colors.text,
     },
 
     phone: {
-        color: "gray",
+        color: colors.textSecondary,
         marginTop: 5,
     },
 
     copyButton: {
-        backgroundColor: "green",
+        backgroundColor: colors.success,
         paddingHorizontal: 12,
         paddingVertical: 8,
-        borderRadius: 8,
+        borderRadius: 10,
     },
 
     copyText: {
-        color: "#fff",
-        fontWeight: "bold",
+        color: colors.buttonText,
+        fontWeight: "700",
     },
 
     emptyContainer: {
@@ -230,7 +273,7 @@ const styles = StyleSheet.create({
     },
 
     emptyText: {
-        fontSize: 20,
-        color: "gray",
+        fontSize: 18,
+        color: colors.textSecondary,
     },
 });

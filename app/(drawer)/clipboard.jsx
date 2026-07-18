@@ -1,15 +1,23 @@
-import React, { useState } from "react";
-import {Alert,Pressable,StyleSheet,Text,TextInput,View,
-} from "react-native";
 import * as Clipboard from "expo-clipboard";
+import { useState } from "react";
+import {
+    Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useColorScheme
+} from "react-native";
+import { useSurveyContext } from "../../contexts/survey-context";
+import { Colors } from "../../constants/theme";
 
 const ClipboardScreen = () => {
+  const { survey, updateSurvey } = useSurveyContext();
   const surveyId = "SURVEY-2026-001";
-  const contactNumber = "+91 9876543210";
-  const currentLocation = "23.0225, 72.5714";
+  const contactNumber = survey.contact || "+91 9876543210";
+  const currentLocation = survey.location || "23.0225, 72.5714";
 
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(survey.notes);
   const [pastedNotes, setPastedNotes] = useState("");
+
+  const theme = useColorScheme() ?? "light";
+  const colors = Colors[theme];
+  const styles = getStyles(colors);
 
   const copyText = async (text, message) => {
     await Clipboard.setStringAsync(text);
@@ -28,7 +36,7 @@ const ClipboardScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.container}>
       <Text style={styles.title}>Clipboard Demo</Text>
 
       {/* Copy Survey ID */}
@@ -65,8 +73,12 @@ const ClipboardScreen = () => {
       <TextInput
         style={styles.input}
         placeholder="Write Notes..."
+        placeholderTextColor={colors.textSecondary}
         value={notes}
-        onChangeText={setNotes}
+        onChangeText={(value) => {
+          setNotes(value);
+          updateSurvey({ notes: value });
+        }}
       />
 
       <Pressable
@@ -84,7 +96,7 @@ const ClipboardScreen = () => {
       </Pressable>
 
       <Pressable
-        style={[styles.button, { backgroundColor: "red" }]}
+        style={[styles.button, { backgroundColor: colors.error, shadowColor: colors.error }]}
         onPress={clearClipboard}
       >
         <Text style={styles.buttonText}>Clear Clipboard</Text>
@@ -96,64 +108,80 @@ const ClipboardScreen = () => {
           {pastedNotes || "No Notes"}
         </Text>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 export default ClipboardScreen;
 
-const styles = StyleSheet.create({
-  container: {
+const getStyles = (colors) => StyleSheet.create({
+  scrollContainer: {
     flex: 1,
+    backgroundColor: colors.background,
+  },
+
+  container: {
+    flexGrow: 1,
     padding: 20,
+    paddingBottom: 35,
     justifyContent: "center",
-    backgroundColor: "#fff",
   },
 
   title: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontWeight: "800",
     textAlign: "center",
     marginBottom: 20,
+    color: colors.text,
   },
 
   button: {
-    backgroundColor: "#2196F3",
+    backgroundColor: colors.primary,
     padding: 15,
     marginVertical: 8,
-    borderRadius: 10,
+    borderRadius: 14,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.24,
+    shadowRadius: 10,
+    elevation: 5,
   },
 
   buttonText: {
-    color: "#fff",
+    color: colors.buttonText,
     textAlign: "center",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "700",
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
+    borderColor: colors.inputBorder,
+    borderRadius: 14,
     padding: 12,
     marginTop: 15,
+    backgroundColor: colors.inputBg,
+    color: colors.text,
   },
 
   output: {
     marginTop: 25,
     padding: 15,
-    backgroundColor: "#f2f2f2",
-    borderRadius: 10,
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
 
   label: {
-    fontWeight: "bold",
-    fontSize: 18,
+    fontWeight: "700",
+    fontSize: 16,
+    color: colors.text,
   },
 
   outputText: {
     marginTop: 8,
-    fontSize: 16,
-    color: "#444",
+    fontSize: 15,
+    color: colors.textSecondary,
   },
 });

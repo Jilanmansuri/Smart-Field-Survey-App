@@ -1,53 +1,55 @@
-import { View, Text, StyleSheet, Image, ScrollView, Pressable, Alert } from "react-native";
 import { router } from "expo-router";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme } from "react-native";
+import { useSurveyContext } from "../../contexts/survey-context";
+import { Colors } from "../../constants/theme";
 
 export default function SurveyPreview() {
-
-  const submitSurvey = () => {
-    Alert.alert("Success", "Survey Submitted Successfully");
-  };
+  const { survey, submitSurvey } = useSurveyContext();
+  const theme = useColorScheme() ?? "light";
+  const colors = Colors[theme];
+  const styles = getStyles(colors);
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 35 }}>
 
       <Text style={styles.heading}>Survey Preview</Text>
 
       <Image
-        source={{ uri: "https://picsum.photos/400/250" }}
+        source={{ uri: survey.photo || "https://picsum.photos/400/250" }}
         style={styles.image}
       />
 
       <View style={styles.card}>
         <Text style={styles.label}>Site Name</Text>
-        <Text style={styles.value}>ABC Construction</Text>
+        <Text style={styles.value}>{survey.siteName || "ABC Construction"}</Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.label}>Client Name</Text>
-        <Text style={styles.value}>Reliance Ltd.</Text>
+        <Text style={styles.value}>{survey.clientName || "Reliance Ltd."}</Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.label}>Priority</Text>
-        <Text style={styles.value}>High</Text>
+        <Text style={styles.value}>{survey.priority || "High"}</Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.label}>Contact</Text>
-        <Text style={styles.value}>9876543210</Text>
+        <Text style={styles.value}>{survey.contact || "9876543210"}</Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.label}>Location</Text>
         <Text style={styles.value}>
-          23.0225, 72.5714
+          {survey.location || "23.0225, 72.5714"}
         </Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.label}>Notes</Text>
         <Text style={styles.value}>
-          Site inspection completed successfully.
+          {survey.notes || "Site inspection completed successfully."}
         </Text>
       </View>
 
@@ -73,17 +75,17 @@ export default function SurveyPreview() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0D1117",
+    backgroundColor: colors.background,
     padding: 16,
   },
 
   heading: {
-    color: "#fff",
-    fontSize: 26,
-    fontWeight: "bold",
+    color: colors.text,
+    fontSize: 28,
+    fontWeight: "800",
     marginBottom: 20,
     textAlign: "center",
   },
@@ -91,29 +93,36 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 220,
-    borderRadius: 15,
+    borderRadius: 20,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
 
   card: {
-    backgroundColor: "#161B22",
-    borderRadius: 15,
+    backgroundColor: colors.card,
+    borderRadius: 16,
     padding: 15,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#2A2F38",
+    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
 
   label: {
-    color: "#9CA3AF",
-    fontSize: 14,
+    color: colors.textSecondary,
+    fontSize: 13,
   },
 
   value: {
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "600",
-    marginTop: 5,
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "700",
+    marginTop: 6,
   },
 
   buttonContainer: {
@@ -125,21 +134,26 @@ const styles = StyleSheet.create({
   button: {
     width: "48%",
     paddingVertical: 15,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
   },
 
   edit: {
-    backgroundColor: "#F59E0B",
+    backgroundColor: colors.warning,
   },
 
   submit: {
-    backgroundColor: "#22C55E",
+    backgroundColor: colors.success,
   },
 
   buttonText: {
-    color: "#fff",
+    color: colors.buttonText,
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "700",
   },
 });

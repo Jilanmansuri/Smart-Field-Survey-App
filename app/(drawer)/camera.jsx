@@ -1,7 +1,10 @@
-import React, { useRef, useState } from "react";
-import { StyleSheet, View, Image, Alert, TouchableOpacity, Text, ActivityIndicator, } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
+import { useRef, useState } from "react";
+import { ActivityIndicator, Alert, Image, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from "react-native";
+import { router } from "expo-router";
+import { useSurveyContext } from "../../contexts/survey-context";
+import { Colors } from "../../constants/theme";
 
 const Camera = () => {
     const CameraRef = useRef(null);
@@ -14,12 +17,17 @@ const Camera = () => {
             writeOnly: true,
         });
 
-    const [photo, setPhoto] = useState(null);
+    const { survey, updateSurvey } = useSurveyContext();
+    const [photo, setPhoto] = useState(survey.photo);
     const [captureTime, setCaptureTime] = useState("");
     const [loading, setLoading] = useState(true);
 
+    const theme = useColorScheme() ?? "light";
+    const colors = Colors[theme];
+    const styles = getStyles(colors);
+
     if (!permission) {
-        return <View />;
+        return <View style={{ flex: 1, backgroundColor: colors.background }} />;
     }
 
     if (!permission.granted) {
@@ -44,6 +52,7 @@ const Camera = () => {
             if (!result) return;
 
             setPhoto(result.uri);
+            updateSurvey({ photo: result.uri });
             setCaptureTime(new Date().toLocaleString());
 
             const libraryPermission = mediaPermission?.granted
@@ -86,6 +95,7 @@ const Camera = () => {
                     style: "destructive",
                     onPress: () => {
                         setPhoto(null);
+                        updateSurvey({ photo: null });
                         setCaptureTime("");
                     },
                 },
@@ -98,7 +108,7 @@ const Camera = () => {
             {loading && (
                 <ActivityIndicator
                     size="large"
-                    color="#fff"
+                    color={colors.primary}
                     style={styles.loader}
                 />
             )}
@@ -139,6 +149,16 @@ const Camera = () => {
                         </Text>
 
                         <TouchableOpacity
+                            style={[styles.button, styles.assignButton]}
+                            onPress={() => {
+                                Alert.alert("Success", "Photo linked to survey!");
+                                router.push("/(drawer)/(tabs)/survey");
+                            }}
+                        >
+                            <Text style={styles.buttonText}>Use Photo in Survey</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
                             style={styles.button}
                             onPress={retakePhoto}
                         >
@@ -160,15 +180,15 @@ const Camera = () => {
 
 export default Camera;
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#121212",
+        backgroundColor: colors.background,
         paddingBottom: 35,
     },
 
     camera: {
-        flex: 1,
+        flex: 2,
     },
 
     loader: {
@@ -182,11 +202,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#121212",
+        backgroundColor: colors.background,
     },
 
     permissionButton: {
-        backgroundColor: "#007AFF",
+        backgroundColor: colors.primary,
         paddingHorizontal: 25,
         height: 55,
         borderRadius: 10,
@@ -196,12 +216,14 @@ const styles = StyleSheet.create({
 
     buttonContainer: {
         padding: 15,
-        backgroundColor: "#121212",
+        backgroundColor: colors.card,
+        borderTopWidth: 1,
+        borderTopColor: colors.border,
         gap: 12,
     },
 
     button: {
-        backgroundColor: "#007AFF",
+        backgroundColor: colors.primary,
         height: 50,
         borderRadius: 10,
         justifyContent: "center",
@@ -209,15 +231,19 @@ const styles = StyleSheet.create({
     },
 
     captureButton: {
-        backgroundColor: "#28A745",
+        backgroundColor: colors.primary, // Blue capture
+    },
+
+    assignButton: {
+        backgroundColor: colors.success, // Green assign
     },
 
     deleteButton: {
-        backgroundColor: "#DC3545",
+        backgroundColor: colors.error,
     },
 
     buttonText: {
-        color: "#fff",
+        color: colors.buttonText,
         fontSize: 16,
         fontWeight: "bold",
     },
@@ -231,7 +257,7 @@ const styles = StyleSheet.create({
     },
 
     time: {
-        color: "#fff",
+        color: colors.text,
         textAlign: "center",
         marginTop: 10,
         marginBottom: 10,

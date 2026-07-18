@@ -1,12 +1,36 @@
 import { Drawer } from "expo-router/drawer";
 import { Ionicons } from "@expo/vector-icons";
 
+import { useColorScheme } from "react-native";
+import { Colors } from "../../constants/theme";
+
 export default function DrawerLayout() {
+  const theme = useColorScheme() ?? "light";
+  const colors = Colors[theme];
+
   return (
     <Drawer
       screenOptions={{
         headerShown: true,
-        drawerActiveTintColor: "#007AFF",
+        drawerActiveTintColor: colors.primary,
+        drawerInactiveTintColor: colors.textSecondary,
+        drawerStyle: {
+          backgroundColor: colors.background,
+        },
+        drawerLabelStyle: {
+          fontWeight: "600",
+        },
+        headerStyle: {
+          backgroundColor: colors.card,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        headerTintColor: colors.text,
+        headerTitleStyle: {
+          fontWeight: "700",
+        },
       }}
     >
       {/* Bottom Tabs */}
