@@ -33,7 +33,7 @@ export default function Dashboard() {
         </View>
         <Pressable onPress={() => router.push("/(drawer)/(tabs)/profile")}>
           <Image
-            source={{ uri: "https://i.pravatar.cc/150?img=12" }}
+            source={{ uri: profile.photo || "https://i.pravatar.cc/150?img=12" }}
             style={styles.avatarImage}
           />
         </Pressable>
@@ -60,20 +60,20 @@ export default function Dashboard() {
         </View>
       </View>
 
-      {/* Student Details Card */}
+      {/* Auditor Profile Card */}
       <Text style={styles.sectionHeading}>Auditor Profile</Text>
       <View style={styles.studentCard}>
         <View style={styles.infoRow}>
           <Ionicons name="card" size={20} color={colors.primary} />
-          <Text style={styles.studentText}>Enrollment: {profile.enrollment || "24CE001"}</Text>
+          <Text style={styles.studentText}>Employee ID: {profile.employeeId || "EMP-2026-042"}</Text>
         </View>
         <View style={styles.infoRow}>
-          <Ionicons name="school" size={20} color={colors.primary} />
-          <Text style={styles.studentText}>Course: {profile.course || "Computer Engineering"}</Text>
+          <Ionicons name="briefcase" size={20} color={colors.primary} />
+          <Text style={styles.studentText}>Role: {profile.role || "Lead Surveyor"}</Text>
         </View>
         <View style={styles.infoRow}>
-          <Ionicons name="calendar" size={20} color={colors.primary} />
-          <Text style={styles.studentText}>Semester: Semester {profile.semester || "1"}</Text>
+          <Ionicons name="business" size={20} color={colors.primary} />
+          <Text style={styles.studentText}>Department: {profile.department || "Field Operations"}</Text>
         </View>
       </View>
 
@@ -170,7 +170,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 16,
-    paddingBottom: 35, // Requested 35px padding at the bottom
+    paddingBottom: 50,
   },
   profileRow: {
     flexDirection: "row",

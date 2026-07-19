@@ -96,10 +96,14 @@ export default function History() {
       <FlatList
         data={filteredData}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 35 }}
+        contentContainerStyle={{ paddingBottom: 50 }}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.site}>{item.site}</Text>
+
+            <Text style={styles.text}>
+              Survey ID : {item.surveyId || "N/A"}
+            </Text>
 
             <Text style={styles.text}>
               Client : {item.client}
@@ -159,6 +163,11 @@ export default function History() {
                     <Text style={styles.noPhotoText}>No Photo Attached</Text>
                   </View>
                 )}
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Survey ID</Text>
+                  <Text style={styles.detailValue}>{selectedItem.surveyId || "N/A"}</Text>
+                </View>
 
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Site Name</Text>
@@ -300,6 +309,11 @@ const getStyles = (colors) => StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
   },
 
   activeFilter: {
@@ -431,6 +445,11 @@ const getStyles = (colors) => StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
     borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
   },
 
   noPhotoText: {

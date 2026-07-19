@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { Image, Pressable, StyleSheet, Text, View, TextInput, ScrollView, useColorScheme } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View, TextInput, ScrollView, useColorScheme, Alert } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { Colors } from "../../../constants/theme";
 import { useSurveyContext } from "../../../contexts/survey-context";
 
@@ -11,21 +13,91 @@ export default function Profile() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(profile.name);
-  const [course, setCourse] = useState(profile.course);
-  const [enrollment, setEnrollment] = useState(profile.enrollment);
-  const [semester, setSemester] = useState(profile.semester);
+  const [role, setRole] = useState(profile.role);
+  const [employeeId, setEmployeeId] = useState(profile.employeeId);
+  const [department, setDepartment] = useState(profile.department);
+  const [photo, setPhoto] = useState(profile.photo);
 
   // Sync state with loaded profile draft
   useEffect(() => {
     setName(profile.name);
-    setCourse(profile.course);
-    setEnrollment(profile.enrollment);
-    setSemester(profile.semester);
+    setRole(profile.role);
+    setEmployeeId(profile.employeeId);
+    setDepartment(profile.department);
+    setPhoto(profile.photo);
   }, [profile]);
 
   const handleSave = () => {
-    updateProfile({ name, course, enrollment, semester });
+    updateProfile({ name, role, employeeId, department, photo });
     setIsEditing(false);
+  };
+
+  const pickImageFromLibrary = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission Denied", "Gallery permission is required to select a photo.");
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setPhoto(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Error picking image from library:", error);
+      Alert.alert("Error", "Failed to select photo.");
+    }
+  };
+
+  const takePhotoWithCamera = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission Denied", "Camera permission is required to capture a photo.");
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setPhoto(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Error taking photo with camera:", error);
+      Alert.alert("Error", "Failed to capture photo.");
+    }
+  };
+
+  const selectImage = () => {
+    Alert.alert(
+      "Profile Photo",
+      "Choose an option to update your profile photo",
+      [
+        {
+          text: "Take Photo",
+          onPress: takePhotoWithCamera,
+        },
+        {
+          text: "Choose from Gallery",
+          onPress: pickImageFromLibrary,
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]
+    );
   };
 
   const getTodayString = () => {
@@ -41,10 +113,24 @@ export default function Profile() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image
-        source={{ uri: "https://i.pravatar.cc/150?img=12" }}
-        style={styles.image}
-      />
+      <Pressable 
+        onPress={isEditing ? selectImage : null} 
+        style={({ pressed }) => [
+          styles.imageContainer,
+          isEditing && pressed && { opacity: 0.8 }
+        ]}
+        disabled={!isEditing}
+      >
+        <Image
+          source={{ uri: photo || "https://i.pravatar.cc/150?img=12" }}
+          style={styles.image}
+        />
+        {isEditing && (
+          <View style={styles.cameraIconContainer}>
+            <Ionicons name="camera" size={18} color="#ffffff" />
+          </View>
+        )}
+      </Pressable>
 
       {isEditing ? (
         <TextInput
@@ -61,42 +147,42 @@ export default function Profile() {
       {isEditing ? (
         <TextInput
           style={[styles.input, { fontWeight: "normal", fontSize: 16 }]}
-          placeholder="Course"
+          placeholder="Role"
           placeholderTextColor={colors.textSecondary}
-          value={course}
-          onChangeText={setCourse}
+          value={role}
+          onChangeText={setRole}
         />
       ) : (
-        <Text style={styles.course}>{profile.course || "Computer Engineering"}</Text>
+        <Text style={styles.course}>{profile.role || "Lead Surveyor"}</Text>
       )}
 
       <View style={styles.card}>
-        <Text style={styles.label}>Enrollment</Text>
+        <Text style={styles.label}>Employee ID</Text>
         {isEditing ? (
           <TextInput
             style={styles.cardInput}
-            placeholder="Enrollment"
+            placeholder="Employee ID"
             placeholderTextColor={colors.textSecondary}
-            value={enrollment}
-            onChangeText={setEnrollment}
+            value={employeeId}
+            onChangeText={setEmployeeId}
           />
         ) : (
-          <Text style={styles.value}>{profile.enrollment || "24CE001"}</Text>
+          <Text style={styles.value}>{profile.employeeId || "EMP-2026-042"}</Text>
         )}
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.label}>Semester</Text>
+        <Text style={styles.label}>Department</Text>
         {isEditing ? (
           <TextInput
             style={styles.cardInput}
-            placeholder="Semester"
+            placeholder="Department"
             placeholderTextColor={colors.textSecondary}
-            value={semester}
-            onChangeText={setSemester}
+            value={department}
+            onChangeText={setDepartment}
           />
         ) : (
-          <Text style={styles.value}>{profile.semester || "1"}</Text>
+          <Text style={styles.value}>{profile.department || "Field Operations"}</Text>
         )}
       </View>
 
@@ -126,14 +212,32 @@ const getStyles = (colors) => StyleSheet.create({
     minHeight: "100%",
   },
 
+  imageContainer: {
+    position: "relative",
+    marginTop: 20,
+    marginBottom: 18,
+  },
+
   image: {
     width: 126,
     height: 126,
     borderRadius: 63,
-    marginTop: 20,
-    marginBottom: 18,
     borderWidth: 3,
     borderColor: colors.primary,
+  },
+
+  cameraIconContainer: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: colors.primary,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 3,
+    borderColor: colors.background,
   },
 
   name: {

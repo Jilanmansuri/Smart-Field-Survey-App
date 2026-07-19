@@ -40,6 +40,11 @@ export default function Survey() {
         <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 50 }}>
             <Text style={styles.heading}>Create Survey</Text>
 
+            <View style={styles.idContainer}>
+                <Text style={styles.idLabel}>Survey ID: </Text>
+                <Text style={styles.idValue}>{survey.surveyId}</Text>
+            </View>
+
             <Text style={styles.label}>
                 Site Name <Text style={{ color: colors.error }}>*</Text>
             </Text>
@@ -197,6 +202,30 @@ const getStyles = (colors) => StyleSheet.create({
         color: colors.text,
     },
 
+    idContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: colors.card,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        marginBottom: 10,
+    },
+
+    idLabel: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: colors.textSecondary,
+    },
+
+    idValue: {
+        fontSize: 14,
+        fontWeight: "700",
+        color: colors.primary,
+    },
+
     label: {
         fontSize: 15,
         marginBottom: 6,
@@ -235,6 +264,11 @@ const getStyles = (colors) => StyleSheet.create({
         marginHorizontal: 4,
         alignItems: "center",
         backgroundColor: colors.card,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 1,
     },
 
     activePriorityChip: {
@@ -264,6 +298,11 @@ const getStyles = (colors) => StyleSheet.create({
         borderRadius: 14,
         padding: 12,
         marginBottom: 10,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.08,
+        shadowRadius: 5,
+        elevation: 2,
     },
 
     attachmentInfo: {
