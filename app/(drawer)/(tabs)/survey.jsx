@@ -1,7 +1,8 @@
+import { useState, useEffect } from "react";
 import { router } from "expo-router";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useColorScheme } from "react-native";
-import { useEffect } from "react";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useColorScheme, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useSurveyContext } from "../../../contexts/survey-context";
 import { Colors } from "../../../constants/theme";
 
@@ -10,6 +11,8 @@ export default function Survey() {
     const theme = useColorScheme() ?? "light";
     const colors = Colors[theme];
     const styles = getStyles(colors);
+
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     // Auto-fill today's date if empty
     useEffect(() => {
@@ -22,6 +25,28 @@ export default function Survey() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const parseDate = (dateStr) => {
+        if (!dateStr) return new Date();
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1; // 0-indexed month
+            const year = parseInt(parts[2], 10);
+            return new Date(year, month, day);
+        }
+        return new Date();
+    };
+
+    const onChangeDate = (event, selectedDate) => {
+        setShowDatePicker(false);
+        if (selectedDate) {
+            const dd = String(selectedDate.getDate()).padStart(2, '0');
+            const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            const yyyy = selectedDate.getFullYear();
+            updateSurvey({ date: `${dd}-${mm}-${yyyy}` });
+        }
+    };
 
     const saveSurvey = () => {
         if (
@@ -109,13 +134,26 @@ export default function Survey() {
             </View>
 
             <Text style={styles.label}>Date</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="DD-MM-YYYY"
-                placeholderTextColor={colors.textSecondary}
-                value={survey.date}
-                onChangeText={(value) => updateSurvey({ date: value })}
-            />
+            <Pressable onPress={() => setShowDatePicker(true)}>
+                <View pointerEvents="none">
+                    <TextInput
+                        style={styles.input}
+                        placeholder="DD-MM-YYYY"
+                        placeholderTextColor={colors.textSecondary}
+                        value={survey.date}
+                        editable={false}
+                    />
+                </View>
+            </Pressable>
+
+            {showDatePicker && (
+                <DateTimePicker
+                    value={parseDate(survey.date)}
+                    mode="date"
+                    display="default"
+                    onChange={onChangeDate}
+                />
+            )}
 
             {/* Attachment Status Cards */}
             <Text style={styles.sectionHeader}>Survey Attachments</Text>
