@@ -10,7 +10,7 @@ export default function SurveyPreview() {
   const styles = getStyles(colors);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 35 }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 50 }}>
 
       <Text style={styles.heading}>Survey Preview</Text>
 
@@ -18,6 +18,11 @@ export default function SurveyPreview() {
         source={{ uri: survey.photo || "https://picsum.photos/400/250" }}
         style={styles.image}
       />
+
+      <View style={styles.card}>
+        <Text style={styles.label}>Survey ID</Text>
+        <Text style={styles.value}>{survey.surveyId || "SURVEY-2026-001"}</Text>
+      </View>
 
       <View style={styles.card}>
         <Text style={styles.label}>Site Name</Text>

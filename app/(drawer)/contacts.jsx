@@ -147,7 +147,7 @@ const ContactsScreen = () => {
                 <FlatList
                     data={filteredContacts}
                     keyExtractor={(item) => item.id}
-                    contentContainerStyle={{ paddingBottom: 35 }}
+                    contentContainerStyle={{ paddingBottom: 50 }}
                     renderItem={renderItem}
                     refreshControl={
                         <RefreshControl
@@ -214,6 +214,11 @@ const getStyles = (colors) => StyleSheet.create({
         marginBottom: 15,
         backgroundColor: colors.inputBg,
         color: colors.text,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        elevation: 2,
     },
 
     card: {
@@ -225,6 +230,11 @@ const getStyles = (colors) => StyleSheet.create({
         borderRadius: 14,
         borderWidth: 1,
         borderColor: colors.border,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.08,
+        shadowRadius: 5,
+        elevation: 2,
     },
 
     avatar: {

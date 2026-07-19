@@ -8,7 +8,7 @@ import { Colors } from "../../constants/theme";
 
 const ClipboardScreen = () => {
   const { survey, updateSurvey } = useSurveyContext();
-  const surveyId = "SURVEY-2026-001";
+  const surveyId = survey.surveyId || "SURVEY-2026-001";
   const contactNumber = survey.contact || "+91 9876543210";
   const currentLocation = survey.location || "23.0225, 72.5714";
 
@@ -123,7 +123,7 @@ const getStyles = (colors) => StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-    paddingBottom: 35,
+    paddingBottom: 50,
     justifyContent: "center",
   },
 
@@ -162,6 +162,11 @@ const getStyles = (colors) => StyleSheet.create({
     marginTop: 15,
     backgroundColor: colors.inputBg,
     color: colors.text,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 2,
   },
 
   output: {
@@ -171,6 +176,11 @@ const getStyles = (colors) => StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
 
   label: {

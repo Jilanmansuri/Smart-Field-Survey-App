@@ -18,7 +18,7 @@ const Camera = () => {
         });
 
     const { survey, updateSurvey } = useSurveyContext();
-    const [photo, setPhoto] = useState(survey.photo);
+    const [photo, setPhoto] = useState(null);
     const [captureTime, setCaptureTime] = useState("");
     const [loading, setLoading] = useState(true);
 
@@ -152,7 +152,12 @@ const Camera = () => {
                             style={[styles.button, styles.assignButton]}
                             onPress={() => {
                                 Alert.alert("Success", "Photo linked to survey!");
-                                router.push("/(drawer)/(tabs)/survey");
+                                setPhoto(null);
+                                if (router.canGoBack()) {
+                                    router.back();
+                                } else {
+                                    router.replace("/(drawer)/(tabs)/survey");
+                                }
                             }}
                         >
                             <Text style={styles.buttonText}>Use Photo in Survey</Text>
@@ -184,7 +189,7 @@ const getStyles = (colors) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.background,
-        paddingBottom: 35,
+        paddingBottom: 50,
     },
 
     camera: {
