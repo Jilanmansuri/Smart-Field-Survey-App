@@ -18,6 +18,13 @@ export default function TabLayout() {
           backgroundColor: colors.card,
           borderTopWidth: 1,
           borderTopColor: colors.border,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.06,
+          shadowRadius: 5,
+          elevation: 6,
         },
       }}
     >

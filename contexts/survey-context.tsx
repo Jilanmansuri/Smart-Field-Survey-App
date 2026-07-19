@@ -4,6 +4,7 @@ import { Alert, ActivityIndicator, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface Survey {
+  surveyId: string;
   siteName: string;
   clientName: string;
   description: string;
@@ -17,6 +18,7 @@ export interface Survey {
 
 export interface SurveyHistoryItem {
   id: string;
+  surveyId: string;
   site: string;
   client: string;
   description: string;
@@ -31,9 +33,10 @@ export interface SurveyHistoryItem {
 
 export interface UserProfile {
   name: string;
-  course: string;
-  enrollment: string;
-  semester: string;
+  role: string;
+  employeeId: string;
+  department: string;
+  photo: string | null;
 }
 
 export interface SurveyContextType {
@@ -49,6 +52,7 @@ export interface SurveyContextType {
 }
 
 const initialSurvey: Survey = {
+  surveyId: "",
   siteName: "",
   clientName: "",
   description: "",
@@ -62,9 +66,16 @@ const initialSurvey: Survey = {
 
 const defaultProfile: UserProfile = {
   name: "Jilan Mansuri",
-  course: "Computer Engineering",
-  enrollment: "24CE001",
-  semester: "1",
+  role: "Lead Surveyor",
+  employeeId: "EMP-2026-042",
+  department: "Field Operations",
+  photo: null,
+};
+
+const generateSurveyId = () => {
+  const year = new Date().getFullYear();
+  const random = Math.floor(1000 + Math.random() * 9000);
+  return `SURVEY-${year}-${random}`;
 };
 
 const SurveyContext = createContext<SurveyContextType | null>(null);
@@ -86,10 +97,42 @@ export function SurveyProvider({ children }: { children: React.ReactNode }) {
           setHistory(JSON.parse(storedHistory));
         }
         if (storedDraft) {
-          setSurvey(JSON.parse(storedDraft));
+          const parsed = JSON.parse(storedDraft);
+          if (!parsed.surveyId) {
+            parsed.surveyId = generateSurveyId();
+          }
+          setSurvey(parsed);
+        } else {
+          setSurvey({ ...initialSurvey, surveyId: generateSurveyId() });
         }
         if (storedProfile) {
-          setProfile(JSON.parse(storedProfile));
+          const parsed = JSON.parse(storedProfile);
+          if (parsed.photo === undefined) {
+            parsed.photo = null;
+          }
+          // Migrate old student profile keys if they exist
+          let migrated = false;
+          if (parsed.course !== undefined) {
+            parsed.role = parsed.course;
+            delete parsed.course;
+            migrated = true;
+          }
+          if (parsed.enrollment !== undefined) {
+            parsed.employeeId = parsed.enrollment;
+            delete parsed.enrollment;
+            migrated = true;
+          }
+          if (parsed.semester !== undefined) {
+            parsed.department = parsed.semester === "1" ? "Field Operations" : parsed.semester;
+            delete parsed.semester;
+            migrated = true;
+          }
+          
+          if (migrated) {
+            // Save migrated profile back to storage
+            AsyncStorage.setItem("user_profile", JSON.stringify(parsed)).catch(console.error);
+          }
+          setProfile(parsed);
         }
       } catch (error) {
         console.error("Error loading persisted survey data:", error);
@@ -110,8 +153,9 @@ export function SurveyProvider({ children }: { children: React.ReactNode }) {
   };
 
   const clearSurvey = async () => {
-    setSurvey(initialSurvey);
-    await AsyncStorage.removeItem("survey_draft");
+    const newSurvey = { ...initialSurvey, surveyId: generateSurveyId() };
+    setSurvey(newSurvey);
+    await AsyncStorage.setItem("survey_draft", JSON.stringify(newSurvey));
   };
 
   const saveSurveyToHistory = () => {
@@ -126,6 +170,7 @@ export function SurveyProvider({ children }: { children: React.ReactNode }) {
 
     const newSurvey: SurveyHistoryItem = {
       id: `${Date.now()}`,
+      surveyId: survey.surveyId || generateSurveyId(),
       site: survey.siteName,
       client: survey.clientName,
       description: survey.description,
