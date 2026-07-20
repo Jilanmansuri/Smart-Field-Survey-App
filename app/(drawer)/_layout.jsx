@@ -1,6 +1,6 @@
-import { Drawer } from "expo-router/drawer";
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
+import { Drawer } from "expo-router/drawer";
 import { Alert, Image, StyleSheet, Text, View, useColorScheme } from "react-native";
 import { Colors } from "../../constants/theme";
 import { useSurveyContext } from "../../contexts/survey-context";
@@ -298,7 +298,7 @@ const getStyles = (colors) => StyleSheet.create({
   labelStyle: {
     fontWeight: "600",
     fontSize: 14,
-    marginLeft: -10,
+    marginLeft: 8,
   },
   divider: {
     height: 1,

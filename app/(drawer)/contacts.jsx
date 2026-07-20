@@ -1,10 +1,9 @@
 import * as Clipboard from "expo-clipboard";
-import * as Contacts from "expo-contacts";
-import { useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View, useColorScheme } from "react-native";
 import { router } from "expo-router";
-import { useSurveyContext } from "../../contexts/survey-context";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, FlatList, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View, useColorScheme } from "react-native";
 import { Colors } from "../../constants/theme";
+import { useSurveyContext } from "../../contexts/survey-context";
 
 const ContactsScreen = () => {
     const [contactsList, setContactsList] = useState([]);
@@ -18,24 +17,46 @@ const ContactsScreen = () => {
     const colors = Colors[theme];
     const styles = getStyles(colors);
 
+    const isMobileNative = Platform.OS === "android" || Platform.OS === "ios";
+
     const getContacts = async () => {
         setLoading(true);
 
-        const { status } = await Contacts.requestPermissionsAsync();
-
-        if (status !== "granted") {
-            Alert.alert("Permission Denied", "Contacts permission required.");
+        if (!isMobileNative) {
+            // Mock contact list for Web and other non-native platforms
+            const mockData = [
+                { id: "1", name: "rock", phoneNumbers: [{ number: "+1 (555) 0199", id: "p1" }] },
+                { id: "2", name: "Jilan Mansuri", phoneNumbers: [{ number: "+1 (555) 0142", id: "p2" }] },
+                { id: "3", name: "Apollo Field Supervisor", phoneNumbers: [{ number: "+1 (555) 0188", id: "p3" }] },
+            ];
+            setContactsList(mockData);
+            setFilteredContacts(mockData);
             setLoading(false);
             return;
         }
 
-        const { data } = await Contacts.getContactsAsync({
-            fields: [Contacts.Fields.PhoneNumbers],
-        });
+        try {
+            const ContactsModule = await import("expo-contacts");
+            const { status } = await ContactsModule.requestPermissionsAsync();
 
-        setContactsList(data);
-        setFilteredContacts(data);
-        setLoading(false);
+            if (status !== "granted") {
+                Alert.alert("Permission Denied", "Contacts permission required.");
+                setLoading(false);
+                return;
+            }
+
+            const { data } = await ContactsModule.getContactsAsync({
+                fields: [ContactsModule.Fields.PhoneNumbers],
+            });
+
+            setContactsList(data || []);
+            setFilteredContacts(data || []);
+        } catch (error) {
+            console.error("Contacts error:", error);
+            Alert.alert("Permission Error", "Unable to fetch contacts. Please grant Contacts permission in Mobile Settings.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSearch = (text) => {
@@ -53,6 +74,11 @@ const ContactsScreen = () => {
         await getContacts();
         setRefreshing(false);
     };
+
+    useEffect(() => {
+        getContacts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const copyNumber = async (number) => {
         if (!number) {

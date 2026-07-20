@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { router } from "expo-router";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useColorScheme, Platform } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useSurveyContext } from "../../../contexts/survey-context";

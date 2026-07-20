@@ -12,7 +12,7 @@ import {
   View,
   useColorScheme,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import MapViewComponent from "../../components/MapViewComponent";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "../../constants/theme";
 import { useSurveyContext } from "../../contexts/survey-context";
@@ -155,23 +155,10 @@ const LocationScreen = () => {
               Accuracy : {location.coords.accuracy ? Number(location.coords.accuracy).toFixed(1) : "0"} meters
             </Text>
 
-            <MapView
-              style={styles.map}
-              region={{
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-            >
-              <Marker
-                coordinate={{
-                  latitude: location.coords.latitude,
-                  longitude: location.coords.longitude,
-                }}
-                title="Current Location"
-              />
-            </MapView>
+            <MapViewComponent
+              location={location}
+              colors={colors}
+            />
 
             <Pressable
               style={({ pressed }) => [

@@ -1,7 +1,7 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import { useRef, useState } from "react";
-import { ActivityIndicator, Alert, Image, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Alert, Image, StyleSheet, Text, TouchableOpacity, View, useColorScheme, Platform } from "react-native";
 import { router } from "expo-router";
 import { useSurveyContext } from "../../contexts/survey-context";
 import { Colors } from "../../constants/theme";
@@ -12,12 +12,11 @@ const Camera = () => {
     const [facing, setFacing] = useState("back");
     const [permission, requestPermission] = useCameraPermissions();
 
-    const [mediaPermission, requestMediaLibraryPermission] =
-        MediaLibrary.usePermissions({
-            writeOnly: true,
-        });
+    const [mediaPermission, requestMediaLibraryPermission] = MediaLibrary.usePermissions({
+        writeOnly: true,
+    });
 
-    const { survey, updateSurvey } = useSurveyContext();
+    const { updateSurvey } = useSurveyContext();
     const [photo, setPhoto] = useState(null);
     const [captureTime, setCaptureTime] = useState("");
     const [loading, setLoading] = useState(true);
@@ -55,19 +54,21 @@ const Camera = () => {
             updateSurvey({ photo: result.uri });
             setCaptureTime(new Date().toLocaleString());
 
-            const libraryPermission = mediaPermission?.granted
-                ? mediaPermission
-                : await requestMediaLibraryPermission();
+            if (Platform.OS !== "web") {
+                const libraryPermission = mediaPermission?.granted
+                    ? mediaPermission
+                    : await requestMediaLibraryPermission();
 
-            if (!libraryPermission.granted) {
-                Alert.alert(
-                    "Permission Denied",
-                    "Gallery permission is required."
-                );
-                return;
+                if (!libraryPermission.granted) {
+                    Alert.alert(
+                        "Permission Denied",
+                        "Gallery permission is required."
+                    );
+                    return;
+                }
+
+                await MediaLibrary.saveToLibraryAsync(result.uri);
             }
-
-            await MediaLibrary.saveToLibraryAsync(result.uri);
 
             Alert.alert("Success", "Photo Saved Successfully!");
         } catch (error) {

@@ -6,7 +6,7 @@ import {
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { Platform, useColorScheme } from "react-native";
+import { LogBox, Platform, useColorScheme } from "react-native";
 import * as NavigationBar from "expo-navigation-bar";
 import { SurveyProvider } from "../contexts/survey-context";
 import { Colors } from "../constants/theme";
@@ -26,6 +26,11 @@ export default function RootLayout() {
       NavigationBar.setButtonStyleAsync(theme === "dark" ? "light" : "dark").catch((err) => {
         console.warn("Failed to set navigation bar button style:", err);
       });
+    }
+
+    if (Platform.OS === "web") {
+      // Ignore developer LogBox messages on web to prevent LogBoxInspectorContainer crash under React 19 / Metro web bundler
+      LogBox.ignoreAllLogs();
     }
   }, [colorScheme]);
 
